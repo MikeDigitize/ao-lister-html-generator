@@ -284,8 +284,6 @@
 
 		(function() {
 
-			let selectedText;
-
 			/* paragraph 1 */
 
 			var p1blockInputs = Array.from(document.querySelectorAll(".p1block"));
@@ -293,14 +291,8 @@
 			p1blockInputs.forEach(input => { 
 				addEvent(input, "keyup", addP1); 
 				addEvent(input, "cut", addP1); 
-				addEvent(document.body, "mouseup", addATag);
-				addEvent(input, "click", clearSelectedText);
 				addEvent(input, "paste", addP1); 
 			});
-
-			function clearSelectedText() {
-				selectedText = "";
-			}
 
 			function updateP1(target, title) {
 				getP1(target).innerText = title;
@@ -314,37 +306,6 @@
 				return p1blockInputs.filter(input => input.value === text).pop();
 			}
 
-			function addATag(event) {
-				let input = event.target;
-				let text = window.getSelection().toString();
-				input = getInputWithSelectedText(text);
-				console.log(text, input);
-				if(!input || !text) {
-					return;
-				}
-				let blockClass = getBlockClass(input);
-				let block = getPanel(blockClass);
-				if(selectedText !== text) {
-					selectedText = window.getSelection().toString();
-					if(selectedText) {
-						let anchorText = prompt("Enter a link for this text");
-						if(anchorText) {
-							createLink(anchorText, selectedText, block);
-						}						
-					}	
-				}														
-			}
-
-			function createLink(anchorText, selectedText, block) {
-				let target = getP1(block);
-				let link = insertLink(anchorText, selectedText);
-				target.innerHTML = target.innerHTML.replace(selectedText, link);
-			}
-
-			function insertLink(anchorText, selectedText) {
-				return `<a href="${anchorText}" target="_blank">${selectedText}</a>`;
-			}
-
 			function addP1(event) {
 				setTimeout(() => {
 					let input = event.target;
@@ -353,6 +314,79 @@
 					let block = getPanel(blockClass);
 					updateP1(block, title);
 				}, 0);
+			}
+
+		})();
+
+		(function() {
+
+			/* add a tags */
+
+			var p1s = Array.from(document.querySelectorAll(".p1"));
+
+			p1s.forEach(p1 => { 
+				addEvent(p1, "mouseup", addATag); 
+			});
+
+			function clearSelectedText() {
+				selectedText = "";
+			}
+
+			function addATag(event) {
+				let p = event.target;
+				let selectedText = window.getSelection().toString();
+				if(selectedText) {
+					let anchorText = prompt("Enter a link for this text");
+					if(anchorText) {
+						createLink(anchorText, selectedText, p);
+					}		
+				}														
+			}
+
+			function createLink(anchorText, selectedText, p) {
+				let link = insertLink(anchorText, selectedText);
+				p.innerHTML = p.innerHTML.replace(selectedText, link);
+			}
+
+			function insertLink(anchorText, selectedText) {
+				return `<a href="${anchorText}" target="_blank">${selectedText}</a>`;
+			}
+
+		})();
+
+		(function(){
+
+			panels.forEach(panel => addEvent(panel, "click", onATagClick));
+
+			function getLink(anchorText, selectedText) {
+				return `<a href="${anchorText}" target="_blank">${selectedText}</a>`;
+			}
+
+			function onATagClick(evt) {
+				evt.preventDefault();
+				let target = evt.target;
+				if(target.tagName === "A" && target.parentNode.classList.contains("p1")) {
+					let removeATag = confirm("Click yes to remove this link, cancel to go to link URL");
+					if(removeATag) {
+						let linkText = target.innerText;
+						let linkhref = target.href;
+						let aParent = target.parentNode;
+						let aTags = Array.from(aParent.querySelectorAll("a"));
+						aTags.forEach(a => {
+							if(a.innerText === linkText) {
+								let indexOfATag = aParent.innerHTML.indexOf(a.outerHTML);
+								aParent.removeChild(a);
+								let parentHTML = aParent.innerHTML.substr(0, indexOfATag) + 
+									linkText + 
+									aParent.innerHTML.substr(indexOfATag, aParent.innerHTML.length);
+								aParent.innerHTML = parentHTML;
+							}
+						});
+					}
+					else {
+						window.location = target.href;
+					}
+				}
 			}
 
 		})();
