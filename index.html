@@ -5,14 +5,18 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="https://media.ao.com/cdnbundle/aost/3.1.1008.0/bundled/AOL/css/MasterStructure.css">
 	<style type="text/css">
-		.preview-controls h1 {
+		.preview-controls h1, .generated-html h1, .preview-controls h2 {
 			font-size: 30px;
 	    	font-family: ozReg, Arial, Helvetica, sans-serif;
 	    	margin-top: 20px;
 	    	text-align: center;
 		}	
 
-		.preview-controls label {
+		.preview-controls h2 {
+			font-size: 20px;
+		}
+
+		.preview-controls label, .generated-html label {
 			font-size: 16px;
 		}	
 		#preview-pane {
@@ -26,11 +30,21 @@
 	    	font-family: ozReg, Arial, Helvetica, sans-serif;
 	    }
 
+	    .clear-all, .generate-html, .copy-html {
+	    	text-align: center;
+	    	margin-top: 10px;
+	    	margin-bottom: 10px;
+	    }
+
+	    .copy-status {
+	    	margin-top: 10px;
+	    	font-size: 16px;
+	    }
+
 	</style>
 	<style type="text/css" id="lister-content-styles">
 
 		#lister-seo-content {
-			background-color: #f4f4f5;
 			color: #000;
 			width: 768px;
 			display: inline-block;
@@ -41,10 +55,12 @@
 		}
 
 		#lister-seo-content .panel {
-			width: 33.333333%;
+			width: 246px;
+			word-wrap: break-word;
 			padding: 10px;
 			display: table-cell;
 			vertical-align: top;
+			background-color: #f4f4f5;
 		}
 
 		#lister-seo-content p, #lister-seo-content a {
@@ -149,6 +165,11 @@
 					</fieldset>
 				</form>
 			</div>
+			<div class="row">
+				<div class="col-sm-4 col-sm-offset-4 clear-all">
+					<button class="btn btn-danger clear-all-btn">Clear all form fields</button>
+				</div>
+			</div>
 		</div>		
 	</section>
 	<section id="preview-pane">
@@ -172,6 +193,29 @@
 	    </div>
 	</section>
 
+	<section class="container">
+		<div class="row">
+			<div class="col-sm-4 col-sm-offset-4 generate-html">
+				<button class="btn btn-success generate-html-btn">Generate HTML</button>
+			</div>
+		</div>
+		<div class="row">		
+			<div class="col-sm-12 generated-html">
+				<h1>Your Output</h1>
+				<fieldset class="form-group">
+					<label for="generated-html">Your generated HTML</label>
+					<textarea class="form-control" id="generated-html" rows="3" placeholder="Generated HTML will output to here"></textarea>
+				</fieldset>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-4 col-sm-offset-4 copy-html">
+				<button class="btn btn-success copy-html-btn">Copy HTML</button>
+				<p class="copy-status">HTML not yet copied</p>
+			</div>
+		</div>
+	</section>
+
 	<script type="text/javascript">
 
 		function addEvent(el, evt, fn) {
@@ -187,6 +231,30 @@
 		}
 
 		var panels = Array.from(document.querySelectorAll(".panel"));
+
+		document.querySelector(".clear-all-btn").addEventListener("click", e => {
+			e.preventDefault();
+			let clear = confirm("Are you sure you want to clear all inputs?");
+			if(clear) {
+				Array.from(document.querySelectorAll("input[type='text'], textarea")).forEach(input => input.value = "");
+			}
+		}, false);
+
+		document.querySelector(".generate-html-btn").addEventListener("click", e => {
+			e.preventDefault();
+			let generatedTextArea = document.querySelector("#generated-html");
+			let styles = document.querySelector("#lister-content-styles").outerHTML;
+			let html = document.querySelector("#lister-seo-content").outerHTML;
+			generatedTextArea.value = `${styles}${html}`;
+		});
+
+		document.querySelector(".copy-html-btn").addEventListener("click", e => {
+			let textarea = document.querySelector("#generated-html");
+			let statusText = document.querySelector(".copy-status");
+			textarea.select();
+			document.execCommand("copy");
+			statusText.innerText = "Text successfully copied!";
+		}, false);
 		
 		(function() {		
 
@@ -433,7 +501,11 @@
 						}
 					}
 					else {
-						window.location = target.href;
+						window.open(
+						    target.href,
+						    "Link preview",
+						    "resizable,scrollbars,status"
+						);
 					}
 				}
 			}
