@@ -63,6 +63,10 @@
 			background-position: 100% 100%;
 		}
 
+		#lister-seo-content .bkground-img .p1 {
+			margin-top: 26px;
+		}
+
 		#lister-seo-content .bg-one {
 			background-image: url('http://media.ao.com/uk/listerSeoBlocks/MachineRecycleImage.png');
 		}
@@ -97,6 +101,10 @@
 						<label for="p1block-one">Paragraph 1 block 1</label>
 						<textarea class="form-control p1block" id="p1block-one" rows="3" placeholder="Paragraph 1 for block 1"></textarea>
 					</fieldset>
+					<fieldset class="form-group">
+						<label for="p2block-one">Paragraph 2 block 1</label>
+						<textarea class="form-control p2block" id="p2block-one" rows="3" placeholder="Paragraph 2 for block 1"></textarea>
+					</fieldset>
 				</form>
 			</div>
 			<div class="col-sm-4">
@@ -114,6 +122,10 @@
 						<label for="p1block-two">Paragraph 1 block 2</label>
 						<textarea class="form-control p1block" id="p1block-two" rows="3" placeholder="Paragraph 1 for block 2"></textarea>
 					</fieldset>
+					<fieldset class="form-group">
+						<label for="p2block-two">Paragraph 2 block 1</label>
+						<textarea class="form-control p2block" id="p2block-two" rows="3" placeholder="Paragraph 2 for block 2"></textarea>
+					</fieldset>
 				</form>
 			</div>
 			<div class="col-sm-4">
@@ -130,6 +142,10 @@
 					<fieldset class="form-group">
 						<label for="p1block-three">Paragraph 1 block 3</label>
 						<textarea class="form-control p1block" id="p1block-three" rows="3" placeholder="Paragraph 1 for block 3"></textarea>
+					</fieldset>
+					<fieldset class="form-group">
+						<label for="p2block-three">Paragraph 2 block 1</label>
+						<textarea class="form-control p2block" id="p2block-three" rows="3" placeholder="Paragraph 2 for block 3"></textarea>
 					</fieldset>
 				</form>
 			</div>
@@ -320,12 +336,53 @@
 
 		(function() {
 
+			/* paragraph 2 */
+
+			var p2blockInputs = Array.from(document.querySelectorAll(".p2block"));
+
+			p2blockInputs.forEach(input => { 
+				addEvent(input, "keyup", addP2); 
+				addEvent(input, "cut", addP2); 
+				addEvent(input, "paste", addP2); 
+			});
+
+			function updateP2(target, title) {
+				getP2(target).innerText = title;
+			}
+
+			function getP2(target) {
+				return target.querySelector(".p2");
+			}
+
+			function getInputWithSelectedText(text) {
+				return p2blockInputs.filter(input => input.value === text).pop();
+			}
+
+			function addP2(event) {
+				setTimeout(() => {
+					let input = event.target;
+					let title = input.value;
+					let blockClass = getBlockClass(input);
+					let block = getPanel(blockClass);
+					updateP2(block, title);
+				}, 0);
+			}
+
+		})();
+
+		(function() {
+
 			/* add a tags */
 
 			var p1s = Array.from(document.querySelectorAll(".p1"));
+			var p2s = Array.from(document.querySelectorAll(".p2"));
 
 			p1s.forEach(p1 => { 
 				addEvent(p1, "mouseup", addATag); 
+			});
+
+			p2s.forEach(p2 => { 
+				addEvent(p2, "mouseup", addATag); 
 			});
 
 			function clearSelectedText() {
@@ -365,23 +422,15 @@
 			function onATagClick(evt) {
 				evt.preventDefault();
 				let target = evt.target;
-				if(target.tagName === "A" && target.parentNode.classList.contains("p1")) {
-					let removeATag = confirm("Click yes to remove this link, cancel to go to link URL");
+				if(target.tagName === "A" && (target.parentNode.classList.contains("p1") || target.parentNode.classList.contains("p2"))) {
+					let removeATag = confirm("Click 'ok' to remove this link or 'cancel' to go to link URL");
 					if(removeATag) {
 						let linkText = target.innerText;
 						let linkhref = target.href;
 						let aParent = target.parentNode;
-						let aTags = Array.from(aParent.querySelectorAll("a"));
-						aTags.forEach(a => {
-							if(a.innerText === linkText) {
-								let indexOfATag = aParent.innerHTML.indexOf(a.outerHTML);
-								aParent.removeChild(a);
-								let parentHTML = aParent.innerHTML.substr(0, indexOfATag) + 
-									linkText + 
-									aParent.innerHTML.substr(indexOfATag, aParent.innerHTML.length);
-								aParent.innerHTML = parentHTML;
-							}
-						});
+						if(aParent.innerHTML.includes(target.outerHTML)) {
+							aParent.innerHTML = aParent.innerHTML.replace(target.outerHTML, linkText);
+						}
 					}
 					else {
 						window.location = target.href;
